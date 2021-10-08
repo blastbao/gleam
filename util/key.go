@@ -14,40 +14,34 @@ func HashByKeys(data []interface{}) int {
 	return x & math.MaxInt64
 }
 
-func hashByKey(data interface{}) int {
 
+// 对于 string 和 []byte 类型，需要用 Hash() 函数计算哈希值，对于 int/uint 类型，则直接返回数值即可。
+func hashByKey(data interface{}) int {
 	switch key := data.(type) {
 	case string:
 		return int(Hash([]byte(key)))
-
 	case []byte:
 		return int(Hash(key))
-
 	case uint64:
 		return int(key)
-
 	case uint32:
 		return int(key)
-
 	case uint8:
 		return int(key)
-
 	case int:
 		return key
-
 	case int8:
 		return int(key)
-
 	case int32:
 		return int(key)
-
 	case int64:
 		return int(key)
 	}
-
 	return 0
 }
 
+
+// PartitionByKeys 计算 data 的 hash 值后对 shardCount 取模，得到 shardIdx 。
 func PartitionByKeys(shardCount int, data []interface{}) int {
 	return HashByKeys(data) % shardCount
 }

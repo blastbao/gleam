@@ -8,14 +8,16 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetScatterPartitions() != nil {
-			return NewScatterPartitions(
-				toInts(m.GetScatterPartitions().GetIndexes()),
-			)
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetScatterPartitions() != nil {
+				return NewScatterPartitions(
+					toInts(m.GetScatterPartitions().GetIndexes()),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 type ScatterPartitions struct {
@@ -50,11 +52,12 @@ func (b *ScatterPartitions) GetMemoryCostInMB(partitionSize int64) int64 {
 
 func DoScatterPartitions(reader io.Reader, writers []io.Writer, indexes []int, stats *pb.InstructionStat) error {
 	shardCount := len(writers)
-
 	return util.ProcessRow(reader, indexes, func(row *util.Row) error {
 		stats.InputCounter++
-		x := util.PartitionByKeys(shardCount, row.K)
-		if err := row.WriteTo(writers[x]); err == nil {
+		// 计算 row.K 的 hash 值后对 shardCount 取模，得到 shardIdx 。
+		shardIdx := util.PartitionByKeys(shardCount, row.K)
+		// 把 row 写入到 shardIdx 对应的 writer 。
+		if err := row.WriteTo(writers[shardIdx]); err == nil {
 			stats.OutputCounter++
 		}
 		return nil

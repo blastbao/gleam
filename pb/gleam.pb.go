@@ -1231,9 +1231,9 @@ type Instruction struct {
 	Union                    *Instruction_Union                    `protobuf:"bytes,24,opt,name=union" json:"union,omitempty"`
 }
 
-func (m *Instruction) Reset()                    { *m = Instruction{} }
-func (m *Instruction) String() string            { return proto.CompactTextString(m) }
-func (*Instruction) ProtoMessage()               {}
+func (m *Instruction) Reset()         { *m = Instruction{} }
+func (m *Instruction) String() string { return proto.CompactTextString(m) }
+func (*Instruction) ProtoMessage()    {}
 func (*Instruction) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{24} }
 
 func (m *Instruction) GetStepId() int32 {

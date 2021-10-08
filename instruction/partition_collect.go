@@ -8,12 +8,14 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetCollectPartitions() != nil {
-			return NewCollectPartitions()
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetCollectPartitions() != nil {
+				return NewCollectPartitions()
+			}
+			return nil
+		},
+	)
 }
 
 type CollectPartitions struct {
@@ -45,12 +47,14 @@ func (b *CollectPartitions) GetMemoryCostInMB(partitionSize int64) int64 {
 
 func DoCollectPartitions(readers []io.Reader, writer io.Writer, stats *pb.InstructionStat) (err error) {
 
+	// 如果只有一个 reader ，意味着只有一个 partition ，就直接将该 reader 转发到 writer 上。
 	if len(readers) == 1 {
 		n, err := io.Copy(writer, readers[0])
 		stats.InputCounter, stats.OutputCounter = n, n
 		return err
 	}
 
+	// 如果有多个 readers ，意味着有多个 partitions ，则把这些 readers 的数据汇总到 writer 上。
 	stats.InputCounter, stats.OutputCounter, err = util.CopyMultipleReaders(readers, writer)
 	return
 }

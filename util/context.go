@@ -9,10 +9,12 @@ func ExecuteWithCleanup(parentContext context.Context, onExecute func() error, o
 
 	errChan := make(chan error)
 
+	// 启动协程执行 onExecute()
 	go func() {
 		errChan <- onExecute()
 	}()
 
+	// 等待 onExecute() 执行完毕或者超时
 	select {
 	case err := <-errChan:
 		cancel()

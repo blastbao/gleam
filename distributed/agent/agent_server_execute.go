@@ -39,6 +39,8 @@ func (as *AgentServer) executeCommand(
 		"--note",
 		startRequest.GetInstructionSet().GetName(),
 	)
+
+	//
 	stdin, err := command.StdinPipe()
 	if err != nil {
 		log.Printf("Failed to create stdin pipe: %v", err)
@@ -54,6 +56,7 @@ func (as *AgentServer) executeCommand(
 		log.Printf("Failed to create stderr pipe: %v", err)
 		return
 	}
+
 	// msg.Env = startRequest.Envs
 	command.Dir = dir
 

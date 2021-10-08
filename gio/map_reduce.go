@@ -13,13 +13,14 @@ import (
 
 type MapperId string
 type ReducerId string
+
 type Mapper func([]interface{}) error
 type Reducer func(x, y interface{}) (interface{}, error)
 
 type gleamTaskOption struct {
 	Mapper          string
 	Reducer         string
-	KeyFields       string
+	KeyFields       string	//
 	ExecutorAddress string
 	HashCode        uint
 	StepId          int
@@ -32,11 +33,12 @@ type gleamRunner struct {
 }
 
 var (
-	HasInitalized bool
+	Initialized bool
 
 	taskOption gleamTaskOption
 	stat       = &pb.ExecutionStat{} // TsEmit() needs this global value
 )
+
 
 func init() {
 	flag.StringVar(&taskOption.Mapper, "gleam.mapper", "", "the generated mapper name")
@@ -49,6 +51,7 @@ func init() {
 	flag.BoolVar(&taskOption.IsProfiling, "gleam.profiling", false, "profiling all steps")
 }
 
+
 var (
 	mappers      map[MapperId]MapperObject
 	reducers     map[ReducerId]ReducerObject
@@ -57,13 +60,13 @@ var (
 )
 
 type MapperObject struct {
-	Mapper Mapper
-	Name   string
+	Mapper Mapper	// Map 函数
+	Name   string	// 函数名
 }
 
 type ReducerObject struct {
-	Reducer Reducer
-	Name    string
+	Reducer Reducer // Reduce 函数
+	Name    string  // 函数名
 }
 
 func init() {
@@ -72,35 +75,46 @@ func init() {
 }
 
 // RegisterMapper register a mapper function to process a command
+//
+// RegisterMapper 注册 Mapper
 func RegisterMapper(fn Mapper) MapperId {
 	mappersLock.Lock()
 	defer mappersLock.Unlock()
 
+	// MapperId 是递增的
 	mapperId := MapperId(fmt.Sprintf("m%d", len(mappers)+1))
-	mappers[mapperId] = MapperObject{fn, runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()}
+	// 保存 MapperId 和 Mapper 的映射关系
+	mappers[mapperId] = MapperObject{
+		fn,
+		runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name(),
+	}
 
 	return mapperId
 }
 
+// GetMapper 根据 MapperId 查询 Mapper
 func GetMapper(mapperId MapperId) (mapper MapperObject, found bool) {
 	mappersLock.Lock()
 	defer mappersLock.Unlock()
-
 	mapper, found = mappers[mapperId]
-
 	return
 }
 
+// RegisterReducer 注册 Reducer
 func RegisterReducer(fn Reducer) ReducerId {
 	reducersLock.Lock()
 	defer reducersLock.Unlock()
 
 	reducerId := ReducerId(fmt.Sprintf("r%d", len(reducers)+1))
-	reducers[reducerId] = ReducerObject{fn, runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()}
+	reducers[reducerId] = ReducerObject{
+		fn,
+		runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name(),
+	}
 
 	return reducerId
 }
 
+// GetReducer 根据 ReducerId 查询 Reducer
 func GetReducer(reducerId ReducerId) (reducer ReducerObject, found bool) {
 	reducersLock.Lock()
 	defer reducersLock.Unlock()
@@ -114,12 +128,17 @@ func GetReducer(reducerId ReducerId) (reducer ReducerObject, found bool) {
 // If the command line invokes the mapper or reducer, execute it and exit.
 // This function will invoke flag.Parse() first.
 func Init() {
-	HasInitalized = true
 
+	Initialized = true
+
+	// 解析命令行参数
 	flag.Parse()
 
+	//
 	if taskOption.Mapper != "" || taskOption.Reducer != "" {
-		runner := &gleamRunner{Option: &taskOption}
+		runner := &gleamRunner{
+			Option: &taskOption,
+		}
 		runner.runMapperReducer()
 		os.Exit(0)
 	}

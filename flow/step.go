@@ -11,19 +11,31 @@ import (
 	"github.com/chrislusf/gleam/util"
 )
 
-func (fc *Flow) NewStep() (step *Step) {
+
+// NewStep 为 flow 创建一个新的 step 。
+func (flow *Flow) NewStep() (step *Step) {
+	// 创建一个 step
 	step = &Step{
-		Id:     len(fc.Steps),
-		Params: make(map[string]interface{}),
-		Meta:   &StepMetadata{IsIdempotent: true},
+		Id:     len(flow.Steps),              // ID++
+		Params: make(map[string]interface{}), // 参数列表
+		Meta: &StepMetadata{ // 元数据
+			IsIdempotent: true,
+		},
 	}
-	fc.Steps = append(fc.Steps, step)
+	// 将 step 保存到 flow.Steps 上
+	flow.Steps = append(flow.Steps, step)
 	return
 }
 
+// NewTask 为 step 创建一个 task 。
 func (step *Step) NewTask() (task *Task) {
-	task = &Task{Step: step, Id: len(step.Tasks)}
-	step.Tasks = append(step.Tasks, task)
+	// 创建一个 task
+	task = &Task{
+		Step: step,	// 反向引用
+		Id: len(step.Tasks),
+	}
+	// 将 task 保存到 step.Tasks 上
+	step.Tasks = append(step.Tasks, task) // 正向引用
 	return
 }
 
@@ -37,32 +49,38 @@ func (step *Step) RunFunction(task *Task) error {
 	var readers []io.Reader
 	var writers []io.Writer
 
-	for i, reader := range task.InputChans {
-		var r io.Reader
-		r = reader.Reader
+	// Readers
+	for i, reader := range task.InputChs {
+		var r io.Reader = reader.Reader
 		if task.InputShards[i].Dataset.Step.IsPipe {
 			r = util.ConvertLineReaderToRowReader(r, step.Name, os.Stderr)
 		}
 		readers = append(readers, r)
 	}
 
+	// Writers
 	for _, shard := range task.OutputShards {
 		writers = append(writers, shard.IncomingChan.Writer)
 	}
 
+	// Stats
 	if task.Stat == nil {
 		task.Stat = &pb.InstructionStat{}
 	}
+
+	// 调用 step 的指令函数 func([]io.Reader, []io.Writer, *pb.InstructionStat) error
 	err := task.Step.Function(readers, writers, task.Stat)
 	if err != nil {
 		log.Printf("Failed to run task %s-%d: %v\n", task.Step.Name, task.Id, err)
 	}
 
+	// 逐个关闭 Writers
 	for _, writer := range writers {
 		if c, ok := writer.(io.Closer); ok {
 			c.Close()
 		}
 	}
+
 	return err
 }
 

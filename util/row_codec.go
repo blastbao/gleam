@@ -10,7 +10,7 @@ import (
 
 // DecodeMsg implements msgp.Decodable
 // We treat empty fields as if we read a Nil from the wire.
-func (z *Row) DecodeMsg(dc *msgp.Reader) (err error) {
+func (row *Row) DecodeMsg(dc *msgp.Reader) (err error) {
 	var sawTopNil bool
 	if dc.IsNil() {
 		sawTopNil = true
@@ -79,13 +79,13 @@ doneWithStruct2zgensym_56fd93edf47ccbd5_3:
 			if err != nil {
 				return
 			}
-			if cap(z.K) >= int(zgensym_56fd93edf47ccbd5_4) {
-				z.K = (z.K)[:zgensym_56fd93edf47ccbd5_4]
+			if cap(row.K) >= int(zgensym_56fd93edf47ccbd5_4) {
+				row.K = (row.K)[:zgensym_56fd93edf47ccbd5_4]
 			} else {
-				z.K = make([]interface{}, zgensym_56fd93edf47ccbd5_4)
+				row.K = make([]interface{}, zgensym_56fd93edf47ccbd5_4)
 			}
-			for zgensym_56fd93edf47ccbd5_0 := range z.K {
-				z.K[zgensym_56fd93edf47ccbd5_0], err = dc.ReadIntf()
+			for zgensym_56fd93edf47ccbd5_0 := range row.K {
+				row.K[zgensym_56fd93edf47ccbd5_0], err = dc.ReadIntf()
 				if err != nil {
 					return
 				}
@@ -97,20 +97,20 @@ doneWithStruct2zgensym_56fd93edf47ccbd5_3:
 			if err != nil {
 				return
 			}
-			if cap(z.V) >= int(zgensym_56fd93edf47ccbd5_5) {
-				z.V = (z.V)[:zgensym_56fd93edf47ccbd5_5]
+			if cap(row.V) >= int(zgensym_56fd93edf47ccbd5_5) {
+				row.V = (row.V)[:zgensym_56fd93edf47ccbd5_5]
 			} else {
-				z.V = make([]interface{}, zgensym_56fd93edf47ccbd5_5)
+				row.V = make([]interface{}, zgensym_56fd93edf47ccbd5_5)
 			}
-			for zgensym_56fd93edf47ccbd5_1 := range z.V {
-				z.V[zgensym_56fd93edf47ccbd5_1], err = dc.ReadIntf()
+			for zgensym_56fd93edf47ccbd5_1 := range row.V {
+				row.V[zgensym_56fd93edf47ccbd5_1], err = dc.ReadIntf()
 				if err != nil {
 					return
 				}
 			}
 		case "T__i64":
 			found2zgensym_56fd93edf47ccbd5_3[2] = true
-			z.T, err = dc.ReadInt64()
+			row.T, err = dc.ReadInt64()
 			if err != nil {
 				return
 			}
@@ -129,7 +129,7 @@ doneWithStruct2zgensym_56fd93edf47ccbd5_3:
 		dc.PopAlwaysNil()
 	}
 
-	if p, ok := interface{}(z).(msgp.PostLoad); ok {
+	if p, ok := interface{}(row).(msgp.PostLoad); ok {
 		p.PostLoadHook()
 	}
 
@@ -142,20 +142,20 @@ var decodeMsgFieldOrder2zgensym_56fd93edf47ccbd5_3 = []string{"K__slc", "V__slc"
 var decodeMsgFieldSkip2zgensym_56fd93edf47ccbd5_3 = []bool{false, false, false}
 
 // fieldsNotEmpty supports omitempty tags
-func (z *Row) fieldsNotEmpty(isempty []bool) uint32 {
+func (row *Row) fieldsNotEmpty(isempty []bool) uint32 {
 	if len(isempty) == 0 {
 		return 3
 	}
 	var fieldsInUse uint32 = 3
-	isempty[0] = (len(z.K) == 0) // string, omitempty
+	isempty[0] = (len(row.K) == 0) // string, omitempty
 	if isempty[0] {
 		fieldsInUse--
 	}
-	isempty[1] = (len(z.V) == 0) // string, omitempty
+	isempty[1] = (len(row.V) == 0) // string, omitempty
 	if isempty[1] {
 		fieldsInUse--
 	}
-	isempty[2] = (z.T == 0) // number, omitempty
+	isempty[2] = (row.T == 0) // number, omitempty
 	if isempty[2] {
 		fieldsInUse--
 	}
@@ -164,14 +164,14 @@ func (z *Row) fieldsNotEmpty(isempty []bool) uint32 {
 }
 
 // EncodeMsg implements msgp.Encodable
-func (z *Row) EncodeMsg(en *msgp.Writer) (err error) {
-	if p, ok := interface{}(z).(msgp.PreSave); ok {
+func (row *Row) EncodeMsg(en *msgp.Writer) (err error) {
+	if p, ok := interface{}(row).(msgp.PreSave); ok {
 		p.PreSaveHook()
 	}
 
 	// honor the omitempty tags
 	var empty_zgensym_56fd93edf47ccbd5_6 [3]bool
-	fieldsInUse_zgensym_56fd93edf47ccbd5_7 := z.fieldsNotEmpty(empty_zgensym_56fd93edf47ccbd5_6[:])
+	fieldsInUse_zgensym_56fd93edf47ccbd5_7 := row.fieldsNotEmpty(empty_zgensym_56fd93edf47ccbd5_6[:])
 
 	// map header
 	err = en.WriteMapHeader(fieldsInUse_zgensym_56fd93edf47ccbd5_7)
@@ -185,12 +185,12 @@ func (z *Row) EncodeMsg(en *msgp.Writer) (err error) {
 		if err != nil {
 			return err
 		}
-		err = en.WriteArrayHeader(uint32(len(z.K)))
+		err = en.WriteArrayHeader(uint32(len(row.K)))
 		if err != nil {
 			return
 		}
-		for zgensym_56fd93edf47ccbd5_0 := range z.K {
-			err = en.WriteIntf(z.K[zgensym_56fd93edf47ccbd5_0])
+		for zgensym_56fd93edf47ccbd5_0 := range row.K {
+			err = en.WriteIntf(row.K[zgensym_56fd93edf47ccbd5_0])
 			if err != nil {
 				return
 			}
@@ -203,12 +203,12 @@ func (z *Row) EncodeMsg(en *msgp.Writer) (err error) {
 		if err != nil {
 			return err
 		}
-		err = en.WriteArrayHeader(uint32(len(z.V)))
+		err = en.WriteArrayHeader(uint32(len(row.V)))
 		if err != nil {
 			return
 		}
-		for zgensym_56fd93edf47ccbd5_1 := range z.V {
-			err = en.WriteIntf(z.V[zgensym_56fd93edf47ccbd5_1])
+		for zgensym_56fd93edf47ccbd5_1 := range row.V {
+			err = en.WriteIntf(row.V[zgensym_56fd93edf47ccbd5_1])
 			if err != nil {
 				return
 			}
@@ -221,7 +221,7 @@ func (z *Row) EncodeMsg(en *msgp.Writer) (err error) {
 		if err != nil {
 			return err
 		}
-		err = en.WriteInt64(z.T)
+		err = en.WriteInt64(row.T)
 		if err != nil {
 			return
 		}
@@ -231,24 +231,28 @@ func (z *Row) EncodeMsg(en *msgp.Writer) (err error) {
 }
 
 // MarshalMsg implements msgp.Marshaler
-func (z *Row) MarshalMsg(b []byte) (o []byte, err error) {
-	if p, ok := interface{}(z).(msgp.PreSave); ok {
+func (row *Row) MarshalMsg(b []byte) (o []byte, err error) {
+
+	//
+	if p, ok := interface{}(row).(msgp.PreSave); ok {
 		p.PreSaveHook()
 	}
 
-	o = msgp.Require(b, z.Msgsize())
+	//
+	o = msgp.Require(b, row.Msgsize())
+
 
 	// honor the omitempty tags
 	var empty [3]bool
-	fieldsInUse := z.fieldsNotEmpty(empty[:])
+	fieldsInUse := row.fieldsNotEmpty(empty[:])
 	o = msgp.AppendMapHeader(o, fieldsInUse)
 
 	if !empty[0] {
 		// string "K__slc"
 		o = append(o, 0xa6, 0x4b, 0x5f, 0x5f, 0x73, 0x6c, 0x63)
-		o = msgp.AppendArrayHeader(o, uint32(len(z.K)))
-		for zgensym_56fd93edf47ccbd5_0 := range z.K {
-			o, err = msgp.AppendIntf(o, z.K[zgensym_56fd93edf47ccbd5_0])
+		o = msgp.AppendArrayHeader(o, uint32(len(row.K)))
+		for zgensym_56fd93edf47ccbd5_0 := range row.K {
+			o, err = msgp.AppendIntf(o, row.K[zgensym_56fd93edf47ccbd5_0])
 			if err != nil {
 				return
 			}
@@ -258,9 +262,9 @@ func (z *Row) MarshalMsg(b []byte) (o []byte, err error) {
 	if !empty[1] {
 		// string "V__slc"
 		o = append(o, 0xa6, 0x56, 0x5f, 0x5f, 0x73, 0x6c, 0x63)
-		o = msgp.AppendArrayHeader(o, uint32(len(z.V)))
-		for zgensym_56fd93edf47ccbd5_1 := range z.V {
-			o, err = msgp.AppendIntf(o, z.V[zgensym_56fd93edf47ccbd5_1])
+		o = msgp.AppendArrayHeader(o, uint32(len(row.V)))
+		for zgensym_56fd93edf47ccbd5_1 := range row.V {
+			o, err = msgp.AppendIntf(o, row.V[zgensym_56fd93edf47ccbd5_1])
 			if err != nil {
 				return
 			}
@@ -270,18 +274,18 @@ func (z *Row) MarshalMsg(b []byte) (o []byte, err error) {
 	if !empty[2] {
 		// string "T__i64"
 		o = append(o, 0xa6, 0x54, 0x5f, 0x5f, 0x69, 0x36, 0x34)
-		o = msgp.AppendInt64(o, z.T)
+		o = msgp.AppendInt64(o, row.T)
 	}
 
 	return
 }
 
 // UnmarshalMsg implements msgp.Unmarshaler
-func (z *Row) UnmarshalMsg(bts []byte) (o []byte, err error) {
+func (row *Row) UnmarshalMsg(bts []byte) (o []byte, err error) {
 	cfg := &msgp.RuntimeConfig{UnsafeZeroCopy: true}
-	return z.UnmarshalMsgWithCfg(bts, cfg)
+	return row.UnmarshalMsgWithCfg(bts, cfg)
 }
-func (z *Row) UnmarshalMsgWithCfg(bts []byte, cfg *msgp.RuntimeConfig) (o []byte, err error) {
+func (row *Row) UnmarshalMsgWithCfg(bts []byte, cfg *msgp.RuntimeConfig) (o []byte, err error) {
 	var nbs msgp.NilBitsStack
 	nbs.Init(cfg)
 	var sawTopNil bool
@@ -345,7 +349,7 @@ doneWithStruct8zgensym_56fd93edf47ccbd5_9:
 		case "K__slc":
 			found8zgensym_56fd93edf47ccbd5_9[0] = true
 			if nbs.AlwaysNil {
-				(z.K) = (z.K)[:0]
+				(row.K) = (row.K)[:0]
 			} else {
 
 				var zgensym_56fd93edf47ccbd5_10 uint32
@@ -353,13 +357,13 @@ doneWithStruct8zgensym_56fd93edf47ccbd5_9:
 				if err != nil {
 					return
 				}
-				if cap(z.K) >= int(zgensym_56fd93edf47ccbd5_10) {
-					z.K = (z.K)[:zgensym_56fd93edf47ccbd5_10]
+				if cap(row.K) >= int(zgensym_56fd93edf47ccbd5_10) {
+					row.K = (row.K)[:zgensym_56fd93edf47ccbd5_10]
 				} else {
-					z.K = make([]interface{}, zgensym_56fd93edf47ccbd5_10)
+					row.K = make([]interface{}, zgensym_56fd93edf47ccbd5_10)
 				}
-				for zgensym_56fd93edf47ccbd5_0 := range z.K {
-					z.K[zgensym_56fd93edf47ccbd5_0], bts, err = nbs.ReadIntfBytes(bts)
+				for zgensym_56fd93edf47ccbd5_0 := range row.K {
+					row.K[zgensym_56fd93edf47ccbd5_0], bts, err = nbs.ReadIntfBytes(bts)
 
 					if err != nil {
 						return
@@ -369,7 +373,7 @@ doneWithStruct8zgensym_56fd93edf47ccbd5_9:
 		case "V__slc":
 			found8zgensym_56fd93edf47ccbd5_9[1] = true
 			if nbs.AlwaysNil {
-				(z.V) = (z.V)[:0]
+				(row.V) = (row.V)[:0]
 			} else {
 
 				var zgensym_56fd93edf47ccbd5_11 uint32
@@ -377,13 +381,13 @@ doneWithStruct8zgensym_56fd93edf47ccbd5_9:
 				if err != nil {
 					return
 				}
-				if cap(z.V) >= int(zgensym_56fd93edf47ccbd5_11) {
-					z.V = (z.V)[:zgensym_56fd93edf47ccbd5_11]
+				if cap(row.V) >= int(zgensym_56fd93edf47ccbd5_11) {
+					row.V = (row.V)[:zgensym_56fd93edf47ccbd5_11]
 				} else {
-					z.V = make([]interface{}, zgensym_56fd93edf47ccbd5_11)
+					row.V = make([]interface{}, zgensym_56fd93edf47ccbd5_11)
 				}
-				for zgensym_56fd93edf47ccbd5_1 := range z.V {
-					z.V[zgensym_56fd93edf47ccbd5_1], bts, err = nbs.ReadIntfBytes(bts)
+				for zgensym_56fd93edf47ccbd5_1 := range row.V {
+					row.V[zgensym_56fd93edf47ccbd5_1], bts, err = nbs.ReadIntfBytes(bts)
 
 					if err != nil {
 						return
@@ -392,7 +396,7 @@ doneWithStruct8zgensym_56fd93edf47ccbd5_9:
 			}
 		case "T__i64":
 			found8zgensym_56fd93edf47ccbd5_9[2] = true
-			z.T, bts, err = nbs.ReadInt64Bytes(bts)
+			row.T, bts, err = nbs.ReadInt64Bytes(bts)
 
 			if err != nil {
 				return
@@ -412,7 +416,7 @@ doneWithStruct8zgensym_56fd93edf47ccbd5_9:
 		bts = nbs.PopAlwaysNil()
 	}
 	o = bts
-	if p, ok := interface{}(z).(msgp.PostLoad); ok {
+	if p, ok := interface{}(row).(msgp.PostLoad); ok {
 		p.PostLoadHook()
 	}
 
@@ -425,14 +429,14 @@ var unmarshalMsgFieldOrder8zgensym_56fd93edf47ccbd5_9 = []string{"K__slc", "V__s
 var unmarshalMsgFieldSkip8zgensym_56fd93edf47ccbd5_9 = []bool{false, false, false}
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
-func (z *Row) Msgsize() (s int) {
+func (row *Row) Msgsize() (s int) {
 	s = 1 + 7 + msgp.ArrayHeaderSize
-	for zgensym_56fd93edf47ccbd5_0 := range z.K {
-		s += msgp.GuessSize(z.K[zgensym_56fd93edf47ccbd5_0])
+	for zgensym_56fd93edf47ccbd5_0 := range row.K {
+		s += msgp.GuessSize(row.K[zgensym_56fd93edf47ccbd5_0])
 	}
 	s += 7 + msgp.ArrayHeaderSize
-	for zgensym_56fd93edf47ccbd5_1 := range z.V {
-		s += msgp.GuessSize(z.V[zgensym_56fd93edf47ccbd5_1])
+	for zgensym_56fd93edf47ccbd5_1 := range row.V {
+		s += msgp.GuessSize(row.V[zgensym_56fd93edf47ccbd5_1])
 	}
 	s += 7 + msgp.Int64Size
 	return

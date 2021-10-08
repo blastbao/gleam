@@ -8,12 +8,15 @@ import (
 	"github.com/chrislusf/gleam/distributed/store"
 )
 
+
+
+// LocalDatasetShardsManager 本地数据集分配管理器
 type LocalDatasetShardsManager struct {
 	sync.Mutex
 	dir            string
 	port           int
 	name2Store     map[string]store.DataStore
-	name2StoreCond *sync.Cond
+	name2StoreCond *sync.Cond	// 条件变量
 }
 
 func NewLocalDatasetShardsManager(dir string, port int) *LocalDatasetShardsManager {
@@ -58,14 +61,18 @@ func (m *LocalDatasetShardsManager) CreateNamedDatasetShard(name string) store.D
 	m.Lock()
 	defer m.Unlock()
 
+	// 如果已存在，就删除
 	_, ok := m.name2Store[name]
 	if ok {
 		m.doDelete(name)
 	}
 
+	// 创建新的数据
 	s := store.NewLocalFileDataStore(m.dir, fmt.Sprintf("%s-%d", name, m.port))
 
+	// 保存
 	m.name2Store[name] = s
+
 	// println(name, "is broadcasting...")
 	m.name2StoreCond.Broadcast()
 
@@ -79,10 +86,12 @@ func (m *LocalDatasetShardsManager) WaitForNamedDatasetShard(name string) store.
 	defer m.Unlock()
 
 	for {
+		// 检查 name 的数据集是否存在
 		if ds, ok := m.name2Store[name]; ok {
 			return ds
 		}
 		// println(name, "is waiting to read...")
+		// 不存在则等待
 		m.name2StoreCond.Wait()
 	}
 
@@ -93,7 +102,11 @@ func (m *LocalDatasetShardsManager) purgeExpiredEntries() {
 	for {
 		func() {
 			m.Lock()
+
+			// 24 Hour
 			cutoverLimit := time.Now().Add(-24 * time.Hour)
+
+			// 取出读写时间在 24 hour 之前的数据集
 			var oldShardNames []string
 			for name, ds := range m.name2Store {
 				if ds.LastWriteAt().Before(cutoverLimit) && ds.LastReadAt().Before(cutoverLimit) {
@@ -101,10 +114,15 @@ func (m *LocalDatasetShardsManager) purgeExpiredEntries() {
 					oldShardNames = append(oldShardNames, name)
 				}
 			}
+
+			// 逐个删除这些过期的数据集
 			for _, name := range oldShardNames {
 				m.doDelete(name)
 			}
+
 			m.Unlock()
+
+			// 每小时执行一次
 			time.Sleep(1 * time.Hour)
 		}()
 	}

@@ -8,16 +8,18 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetJoinPartitionedSorted() != nil {
-			return NewJoinPartitionedSorted(
-				m.GetJoinPartitionedSorted().GetIsLeftOuterJoin(),
-				m.GetJoinPartitionedSorted().GetIsRightOuterJoin(),
-				toInts(m.GetJoinPartitionedSorted().GetIndexes()),
-			)
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetJoinPartitionedSorted() != nil {
+				return NewJoinPartitionedSorted(
+					m.GetJoinPartitionedSorted().GetIsLeftOuterJoin(),
+					m.GetJoinPartitionedSorted().GetIsRightOuterJoin(),
+					toInts(m.GetJoinPartitionedSorted().GetIndexes()),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 type JoinPartitionedSorted struct {

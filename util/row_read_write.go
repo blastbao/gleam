@@ -10,10 +10,12 @@ import (
 
 // WriteTo encode and write a row of data to the writer
 func (row Row) WriteTo(writer io.Writer) (err error) {
+	// 序列化 (blob)
 	encoded, err := encodeRow(row)
 	if err != nil {
 		return fmt.Errorf("WriteTo encoding error: %v", err)
 	}
+	// 将 encoded 写入到 writer
 	return WriteMessage(writer, encoded)
 }
 
@@ -63,10 +65,12 @@ func DecodeRow(encodedBytes []byte) (*Row, error) {
 func ProcessRow(reader io.Reader, indexes []int, f func(*Row) error) (err error) {
 	return ProcessMessage(reader, func(input []byte) error {
 		// read the row
+		// 反序列化
 		row, err := DecodeRow(input)
 		if err != nil {
 			return fmt.Errorf("DoLocalDistinct error %v: %+v", err, input)
 		}
+		//
 		row.UseKeys(indexes)
 		return f(row)
 	})

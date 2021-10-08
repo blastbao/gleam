@@ -109,7 +109,7 @@ func (as *AgentServer) Execute(request *pb.ExecutionRequest, stream pb.GleamAgen
 
 }
 
-// Collect stat from "gleam execute" process
+// CollectExecutionStatistics collect stat from "gleam execute" process
 func (as *AgentServer) CollectExecutionStatistics(stream pb.GleamAgent_CollectExecutionStatisticsServer) error {
 	var statsChan chan *pb.ExecutionStat
 

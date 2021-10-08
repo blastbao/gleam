@@ -26,9 +26,12 @@ type FileReader interface {
 func Csv(fileOrPattern string, partitionCount int) *FileSource {
 	return newFileSource("csv", fileOrPattern, partitionCount)
 }
+
 func Txt(fileOrPattern string, partitionCount int) *FileSource {
 	return newFileSource("txt", fileOrPattern, partitionCount)
 }
+
+
 func Tsv(fileOrPattern string, partitionCount int) *FileSource {
 	return newFileSource("tsv", fileOrPattern, partitionCount)
 }

@@ -56,23 +56,35 @@ func TakeTsv(reader io.Reader, count int, f func([]string) error) (err error) {
 // TakeMessage Reads and processes MessagePack encoded messages.
 // If count is less than 0, all lines are processed.
 func TakeMessage(reader io.Reader, count int, f func([]byte) error) (err error) {
+
 	if _, isBufioReader := reader.(*bufio.Reader); !isBufioReader {
 		reader = bufio.NewReader(reader)
 	}
+
 	for err == nil {
+
 		if count == 0 {
 			io.Copy(ioutil.Discard, reader)
 			return nil
 		}
+
+		// 读取消息
 		message, readError := ReadMessage(reader)
+
+		// EOF 退出
 		if readError == io.EOF {
 			break
 		}
+
+		// 无错误，调用 f()
 		if readError == nil {
 			err = f(message)
+		// 其它错误，报错返回
 		} else {
 			return fmt.Errorf("Failed to read message: %v\n", readError)
 		}
+
+		// 控制读取条数
 		count--
 	}
 
@@ -87,6 +99,8 @@ func ProcessMessage(reader io.Reader, f func([]byte) error) (err error) {
 // ReadMessage reads out the []byte for one message
 func ReadMessage(reader io.Reader) (m []byte, err error) {
 	var length int32
+
+	// Length 4B
 	err = binary.Read(reader, binary.LittleEndian, &length)
 	if err == io.EOF {
 		return nil, io.EOF
@@ -94,12 +108,18 @@ func ReadMessage(reader io.Reader) (m []byte, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read message length: %v", err)
 	}
+
+	// 结束消息
 	if length == int32(MessageControlEOF) {
 		return nil, io.EOF
 	}
+
+	// 空消息
 	if length == 0 {
 		return
 	}
+
+	// 读取 Body
 	m = make([]byte, length)
 	var n int
 	n, err = io.ReadFull(reader, m)
@@ -109,5 +129,6 @@ func ReadMessage(reader io.Reader) (m []byte, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read message content size %d, but read only %d: %v", length, n, err)
 	}
+
 	return m, nil
 }

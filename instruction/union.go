@@ -10,17 +10,21 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetUnion() != nil {
-			return NewUnion(m.GetUnion().GetIsParallel())
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetUnion() != nil {
+				return NewUnion(m.GetUnion().GetIsParallel())
+			}
+			return nil
+		},
+	)
 }
+
 
 type Union struct {
 	isParallel bool
 }
+
 
 func NewUnion(isParallel bool) *Union {
 	return &Union{
@@ -50,8 +54,7 @@ func (b *Union) GetMemoryCostInMB(partitionSize int64) int64 {
 	return 3
 }
 
-func DoUnion(readers []io.Reader, writer io.Writer, isParallel bool,
-	stats *pb.InstructionStat) error {
+func DoUnion(readers []io.Reader, writer io.Writer, isParallel bool, stats *pb.InstructionStat) error {
 
 	var mutex sync.Mutex
 	var wg sync.WaitGroup

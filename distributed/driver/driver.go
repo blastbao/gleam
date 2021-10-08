@@ -45,12 +45,12 @@ func NewFlowDriver(option *Option) *FlowDriver {
 	}
 }
 
-// driver runs on local, controlling all tasks
-func (fcd *FlowDriver) RunFlowContext(parentCtx context.Context, fc *flow.Flow) {
+// RunFlow driver runs on local, controlling all tasks
+func (fcd *FlowDriver) RunFlow(parentCtx context.Context, flw *flow.Flow) {
 
 	// task fusion to minimize disk IO
-	fcd.stepGroups, fcd.taskGroups = plan.GroupTasks(fc)
-	fcd.logExecutionPlan(fc)
+	fcd.stepGroups, fcd.taskGroups = plan.GroupTasks(flw)
+	fcd.logExecutionPlan(flw)
 
 	// create the scheduler
 	sched := scheduler.New(
@@ -60,31 +60,41 @@ func (fcd *FlowDriver) RunFlowContext(parentCtx context.Context, fc *flow.Flow) 
 			Rack:         fcd.Option.Rack,
 			TaskMemoryMB: fcd.Option.TaskMemoryMB,
 			Module:       fcd.Option.Module,
-			FlowHashcode: fc.HashCode,
+			FlowHashcode: flw.HashCode,
 			IsProfiling:  fcd.Option.IsProfiling,
 		},
 	)
 
 	// best effort to clean data on agent disk
 	// this may need more improvements
-	defer fcd.cleanup(sched, fc)
+	defer fcd.cleanup(sched, flw)
 
 	ctx, cancel := context.WithCancel(parentCtx)
 
-	on_interrupt.OnInterrupt(func() {
-		println("interrupted ...")
-		fcd.printDistributedStatus(os.Stderr)
-		cancel()
-		fcd.cleanup(sched, fc)
-	}, nil)
+	on_interrupt.OnInterrupt(
+		func() {
+			println("interrupted ...")
+			fcd.printDistributedStatus(os.Stderr)
+			cancel()
+			fcd.cleanup(sched, flw)
+		},
+		nil,
+	)
 
 	// schedule to run the steps
 	var wg, reportWg sync.WaitGroup
 	for _, taskGroup := range fcd.taskGroups {
 		wg.Add(1)
 		go func(taskGroup *plan.TaskGroup) {
-			sched.ExecuteTaskGroup(ctx, fc, fcd.GetTaskGroupStatus(taskGroup), &wg, taskGroup,
-				fcd.Option.FlowBid/float64(len(fcd.taskGroups)), fcd.Option.RequiredFiles)
+			sched.ExecuteTaskGroup(
+				ctx,
+				flw,
+				fcd.GetTaskGroupStatus(taskGroup),
+				&wg,
+				taskGroup,
+				fcd.Option.FlowBid/float64(len(fcd.taskGroups)),
+				fcd.Option.RequiredFiles,
+			)
 		}(taskGroup)
 	}
 	go sched.Market.FetcherLoop()

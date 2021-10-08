@@ -35,6 +35,8 @@ func newChannelOfValuesWithSameKey(name string, sortedChan io.Reader, indexes []
 
 		defer close(writer)
 
+
+
 		firstRow, err := util.ReadRow(sortedChan)
 		if err != nil {
 			if err != io.EOF {
@@ -42,6 +44,7 @@ func newChannelOfValuesWithSameKey(name string, sortedChan io.Reader, indexes []
 			}
 			return
 		}
+
 		// fmt.Printf("%s join read len=%d, row: %s\n", name, len(row), row[0])
 
 		firstRow.UseKeys(indexes)

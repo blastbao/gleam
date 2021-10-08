@@ -7,7 +7,7 @@ type FlowConfig struct {
 }
 
 // Hint adds hints to the flow.
-func (d *Flow) Hint(options ...FlowHintOption) {
+func (flow *Flow) Hint(options ...FlowHintOption) {
 	var config FlowConfig
 	for _, option := range options {
 		option(&config)

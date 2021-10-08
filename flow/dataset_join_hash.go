@@ -6,16 +6,16 @@ import (
 
 // HashJoin joins two datasets by putting the smaller dataset in memory on all
 // executors and streams through the bigger dataset.
-func (bigger *Dataset) HashJoin(name string, smaller *Dataset, sortOption *SortOption) *Dataset {
-	return smaller.Broadcast(name, len(bigger.Shards)).LocalHashAndJoinWith(name, bigger, sortOption)
+func (d *Dataset) HashJoin(name string, smaller *Dataset, sortOption *SortOption) *Dataset {
+	return smaller.Broadcast(name, len(d.Shards)).LocalHashAndJoinWith(name, d, sortOption)
 }
 
-func (this *Dataset) LocalHashAndJoinWith(name string, that *Dataset, sortOption *SortOption) *Dataset {
-	ret := this.Flow.NewNextDataset(len(that.Shards))
+func (d *Dataset) LocalHashAndJoinWith(name string, that *Dataset, sortOption *SortOption) *Dataset {
+	ret := d.Flow.NewNextDataset(len(that.Shards))
 	ret.IsPartitionedBy = that.IsPartitionedBy
 	ret.IsLocalSorted = that.IsLocalSorted
-	inputs := []*Dataset{this, that}
-	step := this.Flow.MergeDatasets1ShardTo1Step(inputs, ret)
+	inputs := []*Dataset{d, that}
+	step := d.Flow.MergeDatasets1ShardTo1Step(inputs, ret)
 	step.SetInstruction(name, instruction.NewLocalHashAndJoinWith(sortOption.Indexes()))
 	return ret
 }

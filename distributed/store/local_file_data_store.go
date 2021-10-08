@@ -8,19 +8,21 @@ import (
 )
 
 type DataStore interface {
-	io.Writer
-	io.ReaderAt
-	Destroy()
-	LastWriteAt() time.Time
-	LastReadAt() time.Time
+	io.Writer					// Write()
+	io.ReaderAt					// ReadAt()
+	Destroy()					// 销毁
+	LastWriteAt() time.Time		// 最近写入时间
+	LastReadAt() time.Time		// 最近读取时间
 }
 
+
+// LocalFileDataStore 本地文件存储
 type LocalFileDataStore struct {
-	dir         string
-	name        string
-	store       *SingleFileStore
-	lastWriteAt time.Time
-	lastReadAt  time.Time
+	dir         string				// 目录
+	name        string				// 名称
+	store       *SingleFileStore	// dir/name.dat
+	lastWriteAt time.Time			// 最新的写入时间
+	lastReadAt  time.Time			//
 }
 
 func NewLocalFileDataStore(dir, name string) (ds *LocalFileDataStore) {

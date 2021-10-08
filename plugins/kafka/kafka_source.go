@@ -25,11 +25,15 @@ type KafkaSource struct {
 // partitions them via round robin,
 // and reads each shard on each executor
 func (s *KafkaSource) Generate(f *flow.Flow) *flow.Dataset {
+
+	// 获取分区 ID 表
 	partitionIds, err := s.fetchPartitionIds()
 	if err != nil {
 		log.Printf("KafkaSource failed to fetch kafka partitions: %v", err)
 		return nil
 	}
+
+	//
 	return s.genShardInfos(f, partitionIds).
 		RoundRobin(s.prefix, len(partitionIds)).
 		Map(s.prefix+".Read", MapperReadShard)
@@ -57,21 +61,21 @@ func (s *KafkaSource) fetchPartitionIds() ([]int32, error) {
 }
 
 func (s *KafkaSource) genShardInfos(f *flow.Flow, partitionIds []int32) *flow.Dataset {
-	return f.Source(s.prefix+".list", func(writer io.Writer, stats *pb.InstructionStat) error {
-
-		stats.InputCounter++
-
-		for _, pid := range partitionIds {
-			stats.OutputCounter++
-			util.NewRow(util.Now(), encodeShardInfo(&KafkaPartitionInfo{
-				Brokers:        s.Brokers,
-				Topic:          s.Topic,
-				Group:          s.Group,
-				TimeoutSeconds: s.TimeoutSeconds,
-				PartitionId:    pid,
-			})).WriteTo(writer)
-		}
-
-		return nil
-	})
+	return f.Source(
+		s.prefix+".list",
+		func(writer io.Writer, stats *pb.InstructionStat) error {
+			stats.InputCounter++
+			for _, pid := range partitionIds {
+				stats.OutputCounter++
+				util.NewRow(util.Now(), encodeShardInfo(&KafkaPartitionInfo{
+					Brokers:        s.Brokers,			// Brokers 列表
+					Topic:          s.Topic,			// Topic
+					Group:          s.Group,			// Group
+					TimeoutSeconds: s.TimeoutSeconds,	// 超时
+					PartitionId:    pid,				// Partition ID
+				})).WriteTo(writer)
+			}
+			return nil
+		},
+	)
 }

@@ -69,10 +69,13 @@ message DataLocation {
 //////////////////////////////////////////////////
 message FlowExecutionStatus {
 
+    // 任务
     message Task {
         int32 stepId = 1;
         int32 id = 2; // unique when combined with stepId
     }
+
+    // 步骤
     message Step {
         int32 id = 1;
         string name = 2;
@@ -82,20 +85,29 @@ message FlowExecutionStatus {
         int32 outputDatasetId = 6;
         string description = 7;
     }
+
+    // 数据集
     message Dataset {
         int32 id = 1;
         int32 stepId = 2;
         repeated int32 readingStepIds = 3;
     }
+
+    // 数据集分片
     message DatasetShard {
         int32 datasetId = 1;
         int32 id = 2; // unique when combined with datasetId
     }
+
+    // 步骤组
     message StepGroup {
         repeated int32 stepIds = 1;
         repeated int32 parentIds = 2;
     }
+
+    // 任务组
     message TaskGroup {
+
         repeated int32 stepIds = 1;
         repeated int32 taskIds = 2;
 
@@ -114,6 +126,7 @@ message FlowExecutionStatus {
         repeated Execution executions = 5;
     }
 
+    //
     repeated StepGroup stepGroups = 1;
     repeated TaskGroup taskGroups = 2;
     repeated Dataset datasets = 3;
@@ -123,6 +136,7 @@ message FlowExecutionStatus {
 
     uint32 id = 7;
 
+    // 驱动信息
     message DriverInfo {
         string username = 1;
         string hostname = 2;
@@ -132,6 +146,7 @@ message FlowExecutionStatus {
         int64 stop_time = 6;
         string name = 7;
     }
+
     DriverInfo driver = 8;
     string error = 9;
 }
@@ -237,6 +252,7 @@ message ReadRequest {
 // Distributed Instructions
 ///////////////////////////////////
 
+// 指令集
 message InstructionSet {
     repeated Instruction instructions = 1;
     int32 readerCount = 2;
@@ -246,18 +262,23 @@ message InstructionSet {
     string name = 6;
 }
 
+// 指令
 message Instruction {
+
     int32 stepId = 1;
     int32 taskId = 2;
     int32 memoryInMB = 3;
+
     repeated DatasetShardLocation inputShardLocations = 4;
     repeated DatasetShardLocation OutputShardLocations = 5;
+
 
     message Select {
         repeated int32 keyIndexes = 1;
         repeated int32 valueIndexes = 2;
     }
     Select select = 6;
+
 
     message JoinPartitionedSorted {
         repeated int32 indexes = 1;
@@ -266,33 +287,45 @@ message Instruction {
     }
     JoinPartitionedSorted joinPartitionedSorted = 7;
 
+
     message CoGroupPartitionedSorted {
         repeated int32 indexes = 1;
     }
     CoGroupPartitionedSorted coGroupPartitionedSorted = 8;
+
 
     message PipeAsArgs {
         string code = 1;
     }
     PipeAsArgs pipeAsArgs = 9;
 
+
+
     message ScatterPartitions {
         repeated int32 indexes = 1;
     }
     ScatterPartitions scatterPartitions = 10;
 
+
+
     message CollectPartitions {
     }
     CollectPartitions collectPartitions = 11;
+
+
 
     message InputSplitReader {
         string inputType = 1;
     }
     InputSplitReader inputSplitReader = 12;
 
+
+
     message RoundRobin {
     }
     RoundRobin roundRobin = 13;
+
+
 
     message LocalTop {
         int32 n = 1;
@@ -300,14 +333,20 @@ message Instruction {
     }
     LocalTop localTop = 14;
 
+
+
     message Broadcast {
     }
     Broadcast broadcast = 15;
+
+
 
     message LocalHashAndJoinWith {
         repeated int32 indexes = 1;
     }
     LocalHashAndJoinWith localHashAndJoinWith = 16;
+
+
 
     message Script {
         bool isPipe = 1;
@@ -317,24 +356,35 @@ message Instruction {
     }
     Script script = 17;
 
+
+
     message LocalSort {
         repeated OrderBy orderBys = 1;
     }
     LocalSort localSort = 18;
+
+
 
     message MergeSortedTo {
         repeated OrderBy orderBys = 1;
     }
     MergeSortedTo mergeSortedTo = 19;
 
+
+
     message MergeTo {
     }
     MergeTo mergeTo = 20;
+
+
 
     message LocalDistinct {
         repeated OrderBy orderBys = 1;
     }
     LocalDistinct localDistinct = 21;
+
+
+
 
     message LocalLimit {
         int32 n = 1;
@@ -342,15 +392,21 @@ message Instruction {
     }
     LocalLimit localLimit = 22;
 
+
+
     message LocalGroupBySorted {
         repeated int32 indexes = 1;
     }
     LocalGroupBySorted localGroupBySorted = 23;
 
+
+
     message Union {
         bool isParallel = 1;
     }
     Union union = 24;
+
+
 }
 
 message OrderBy {

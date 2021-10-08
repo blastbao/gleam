@@ -191,11 +191,11 @@ func ConvertLineReaderToRowReader(lineReader io.Reader, name string, errorOutput
 func ChannelToLineWriter(wg *sync.WaitGroup, stat *pb.InstructionStat, name string, reader io.Reader, writer io.WriteCloser, errorOutput io.Writer) {
 	defer wg.Done()
 	defer writer.Close()
+
 	w := bufio.NewWriterSize(writer, BUFFER_SIZE)
 	defer w.Flush()
 
 	r := bufio.NewReaderSize(reader, BUFFER_SIZE)
-
 	if err := PrintDelimited(stat, r, w, "\t", "\n"); err != nil {
 		fmt.Fprintf(errorOutput, "%s>Failed to decode bytes from channel to writer: %v\n", name, err)
 		return

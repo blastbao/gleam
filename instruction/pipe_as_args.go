@@ -14,12 +14,14 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetPipeAsArgs() != nil {
-			return NewPipeAsArgs(m.GetPipeAsArgs().GetCode())
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetPipeAsArgs() != nil {
+				return NewPipeAsArgs(m.GetPipeAsArgs().GetCode())
+			}
+			return nil
+		},
+	)
 }
 
 type PipeAsArgs struct {
@@ -82,6 +84,7 @@ func DoPipeAsArgs(reader io.Reader, writer io.Writer, code string, stats *pb.Ins
 			Path: "sh",
 			Args: []string{"-c", actualCode},
 		}
+
 		// write output to writer
 		wg.Add(1)
 		util.Execute(context.Background(), &wg, stats,

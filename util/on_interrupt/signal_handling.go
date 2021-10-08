@@ -25,14 +25,19 @@ func OnInterrupt(fn func(), onExitFunc func()) {
 		// syscall.SIGQUIT, // Quit from keyboard, "kill -3"
 	)
 	go func() {
+
 		for sig := range signalChan {
 			fn()
-			if sig != syscall.SIGINFO {
+			// 如果是 `SIGINFO` 信号，就啥也不做，否则调用 os.Exit(0) 退出进程。
+			if sig == syscall.SIGINFO {
+				// do nothing
+			} else {
 				if onExitFunc != nil {
 					onExitFunc()
 				}
 				os.Exit(0)
 			}
 		}
+
 	}()
 }

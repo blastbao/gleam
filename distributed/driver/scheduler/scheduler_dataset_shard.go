@@ -11,11 +11,16 @@ import (
 func (s *Scheduler) DeleteOutput(taskGroup *plan.TaskGroup) {
 	var wg sync.WaitGroup
 	tasks := taskGroup.Tasks
+
+	// 查询最后一个 task 的输出分片
 	for _, shard := range tasks[len(tasks)-1].OutputShards {
+
+		// 查询 shard 的 location
 		location, _ := s.GetShardLocation(shard)
 		if location.Location == nil {
 			continue
 		}
+
 		// println("deleting", shard.Name(), "on", location.GetLocation().URL())
 		wg.Add(1)
 		go func(location pb.DataLocation, shard *flow.DatasetShard) {

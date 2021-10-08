@@ -7,9 +7,12 @@ import (
 	"github.com/chrislusf/gleam/instruction"
 )
 
+
+
 type SortOption struct {
 	orderByList []instruction.OrderBy
 }
+
 
 func Field(indexes ...int) *SortOption {
 	ret := &SortOption{}
@@ -37,7 +40,7 @@ func OrderBy(index int, ascending bool) *SortOption {
 	return ret
 }
 
-// OrderBy chains a list of sorting order by
+// By chains a list of sorting order by
 func (o *SortOption) By(index int, ascending bool) *SortOption {
 	order := instruction.Descending
 	if ascending {
@@ -50,13 +53,13 @@ func (o *SortOption) By(index int, ascending bool) *SortOption {
 	return o
 }
 
-// return a list of indexes
+// Indexes return a list of indexes
 func (o *SortOption) Indexes() []int {
-	var ret []int
+	var idxes []int
 	for _, x := range o.orderByList {
-		ret = append(ret, x.Index)
+		idxes = append(idxes, x.Index)
 	}
-	return ret
+	return idxes
 }
 
 func (o *SortOption) String() string {

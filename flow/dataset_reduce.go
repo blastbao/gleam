@@ -28,8 +28,7 @@ func (d *Dataset) ReduceBy(name string, reducerId gio.ReducerId, keyFields *Sort
 	return ret
 }
 
-// Reduce runs the reducer registered to the reducerId,
-// combining all rows into one row
+// Reduce runs the reducer registered to the reducerId, combining all rows into one row
 func (d *Dataset) Reduce(name string, reducerId gio.ReducerId) (ret *Dataset) {
 
 	name = name + ".Reduce"
@@ -38,6 +37,7 @@ func (d *Dataset) Reduce(name string, reducerId gio.ReducerId) (ret *Dataset) {
 	if len(d.Shards) > 1 {
 		ret = ret.MergeTo(name, 1).LocalReduceBy(name+".LocalReduce2", reducerId, nil)
 	}
+
 	return ret
 }
 
@@ -49,12 +49,13 @@ func (d *Dataset) LocalReduceBy(name string, reducerId gio.ReducerId, sortOption
 	step.IsGoCode = true
 
 	// add key indexes for reducer command line option
-	keyPositions := []string{}
+	var keyPositions []string
 	if sortOption != nil {
 		for _, keyPosition := range sortOption.Indexes() {
 			keyPositions = append(keyPositions, strconv.Itoa(keyPosition))
 		}
 	}
+
 	keyFields := "0" // combine all rows directly
 	if len(keyPositions) > 0 {
 		keyFields = strings.Join(keyPositions, ",")
@@ -63,6 +64,7 @@ func (d *Dataset) LocalReduceBy(name string, reducerId gio.ReducerId, sortOption
 	ex, _ := os.Executable()
 
 	reducer, _ := gio.GetReducer(reducerId)
+
 	step.Description = reducer.Name
 
 	var args []string
@@ -74,5 +76,6 @@ func (d *Dataset) LocalReduceBy(name string, reducerId gio.ReducerId, sortOption
 		Path: ex,
 		Args: args,
 	}
+
 	return ret
 }

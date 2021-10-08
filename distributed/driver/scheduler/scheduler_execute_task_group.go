@@ -17,8 +17,9 @@ import (
 
 // ExecuteTaskGroup wait for inputs and execute the task group remotely.
 // If cancelled, the output will be cleaned up.
-func (s *Scheduler) ExecuteTaskGroup(ctx context.Context,
-	fc *flow.Flow,
+func (s *Scheduler) ExecuteTaskGroup(
+	ctx context.Context,
+	flw *flow.Flow,
 	taskGroupStatus *pb.FlowExecutionStatus_TaskGroup,
 	wg *sync.WaitGroup,
 	taskGroup *plan.TaskGroup,
@@ -31,16 +32,18 @@ func (s *Scheduler) ExecuteTaskGroup(ctx context.Context,
 	if tasks[0].Step.IsOnDriverSide {
 		// these should be only one task on the driver side
 		if err := taskGroupStatus.Track(func(exeStatus *pb.FlowExecutionStatus_TaskGroup_Execution) error {
-			return s.localExecute(ctx, fc, exeStatus, lastTask, wg)
+			return s.localExecute(ctx, flw, exeStatus, lastTask, wg)
 		}); err != nil {
 			log.Fatalf("Failed to execute on driver side: %v", err)
 		}
 		return
 	}
+
 	if !needsInputFromDriver(tasks[0]) {
 		// wait until inputs are registed
 		s.shardLocator.waitForInputDatasetShardLocations(tasks[0])
 	}
+
 	if isInputOnDisk(tasks[0]) && !isRestartableTasks(tasks) {
 		// for non-restartable taskGroup, wait until on disk inputs are completed
 		for _, stepGroup := range taskGroup.ParentStepGroup.Parents {
@@ -84,6 +87,7 @@ func (s *Scheduler) ExecuteTaskGroup(ctx context.Context,
 	for _, t := range tasks {
 		hasGoCode = hasGoCode || t.Step.IsGoCode
 	}
+
 	if hasGoCode {
 		relatedFiles = append(relatedFiles, resource.FileResource{os.Args[0], "."})
 	}
@@ -91,7 +95,7 @@ func (s *Scheduler) ExecuteTaskGroup(ctx context.Context,
 	if len(relatedFiles) > 0 {
 		err := withClient(allocation.Location.URL(), func(client pb.GleamAgentClient) error {
 			for _, relatedFile := range relatedFiles {
-				err := sendRelatedFile(ctx, client, fc.HashCode, relatedFile)
+				err := sendRelatedFile(ctx, client, flw.HashCode, relatedFile)
 				if err != nil {
 					taskGroup.MarkStop(err)
 					return err
@@ -106,7 +110,7 @@ func (s *Scheduler) ExecuteTaskGroup(ctx context.Context,
 
 	fn := func() error {
 		err := taskGroupStatus.Track(func(exeStatus *pb.FlowExecutionStatus_TaskGroup_Execution) error {
-			return s.remoteExecuteOnLocation(ctx, fc, taskGroupStatus, exeStatus, taskGroup, allocation, wg)
+			return s.remoteExecuteOnLocation(ctx, flw, taskGroupStatus, exeStatus, taskGroup, allocation, wg)
 		})
 		if err != nil {
 			log.Printf("Failed to remoteExecuteOnLocation %v: %v", allocation, err)

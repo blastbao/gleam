@@ -22,6 +22,7 @@ func (ms *MasterServer) uiStatusHandler(w http.ResponseWriter, r *http.Request) 
 		stat, _ := ms.statusCache.Get(key.(uint32))
 		stats = append(stats, stat.(*pb.FlowExecutionStatus))
 	}
+
 	sort.Slice(stats, func(i, j int) bool {
 		return stats[i].Driver.StartTime > stats[j].Driver.StartTime
 	})
@@ -44,24 +45,29 @@ func (ms *MasterServer) uiStatusHandler(w http.ResponseWriter, r *http.Request) 
 
 func (ms *MasterServer) jobStatusHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+
+	// 提取参数 JobId
 	jobId, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
 		log.Printf("Failed to parse job id %s", vars["id"])
 		return
 	}
+
+	// 查询 JobId 任务状态
 	status, ok := ms.statusCache.Get(uint32(jobId))
 	if !ok {
 		log.Printf("Failed to find job status for %d", jobId)
 		return
 	}
 
+	// 构造响应
 	args := struct {
-		Version   string
-		Topology  interface{}
-		Status    interface{}
-		Svg       string
-		StartTime time.Time
-		Logs      *lru.Cache
+		Version   string		// 版本号
+		Topology  interface{}	// 拓扑
+		Status    interface{}	// 状态
+		Svg       string		//
+		StartTime time.Time		// 开始时间
+		Logs      *lru.Cache	// 日志
 	}{
 		"0.01",
 		ms.Topology,
@@ -70,5 +76,6 @@ func (ms *MasterServer) jobStatusHandler(w http.ResponseWriter, r *http.Request)
 		ms.startTime,
 		ms.statusCache,
 	}
+
 	ui.JobStatusTpl.Execute(w, args)
 }

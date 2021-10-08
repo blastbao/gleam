@@ -41,12 +41,12 @@ const (
 	ModeOnDisk
 )
 
-type DasetsetMetadata struct {
+type DatesetMetadata struct {
 	TotalSize int64
 	OnDisk    ModeIO
 }
 
-type DasetsetShardMetadata struct {
+type DatesetShardMetadata struct {
 	TotalSize int64
 	Timestamp time.Time
 	URI       string
@@ -60,10 +60,10 @@ type StepMetadata struct {
 }
 
 type Flow struct {
-	Name     string
-	Steps    []*Step
-	Datasets []*Dataset
-	HashCode uint32
+	Name     string		// 名称
+	Steps    []*Step	// 步骤
+	Datasets []*Dataset	// 数据集
+	HashCode uint32		// 哈希码
 }
 
 type Dataset struct {
@@ -73,8 +73,8 @@ type Dataset struct {
 	Step            *Step
 	ReadingSteps    []*Step
 	IsPartitionedBy []int
-	IsLocalSorted   []instruction.OrderBy
-	Meta            *DasetsetMetadata
+	IsLocalSorted   []instruction.OrderBy	//
+	Meta            *DatesetMetadata
 	RunLocked
 }
 
@@ -87,19 +87,28 @@ type DatasetShard struct {
 	Counter       int64
 	ReadyTime     time.Time
 	CloseTime     time.Time
-	Meta          *DasetsetShardMetadata
+	Meta          *DatesetShardMetadata
 }
 
 type Step struct {
 	Id             int
+	// 流
 	Flow           *Flow
+	// 输入数据集
 	InputDatasets  []*Dataset
+	// 输出数据集
 	OutputDataset  *Dataset
-	Function       func([]io.Reader, []io.Writer, *pb.InstructionStat) error
-	Instruction    instruction.Instruction
-	Tasks          []*Task
+
+	// 名称
 	Name           string
+	// 描述
 	Description    string
+	// 指令函数
+	Function       func([]io.Reader, []io.Writer, *pb.InstructionStat) error
+	// 指令
+	Instruction    instruction.Instruction
+
+	Tasks          []*Task
 	NetworkType    NetworkType
 	IsOnDriverSide bool
 	IsPipe         bool
@@ -115,7 +124,7 @@ type Task struct {
 	Id           int
 	Step         *Step
 	InputShards  []*DatasetShard
-	InputChans   []*util.Piper // task specific input chans. InputShard may have multiple reading tasks
+	InputChs     []*util.Piper // task specific input chans. InputShard may have multiple reading tasks
 	OutputShards []*DatasetShard
 	Stat         *pb.InstructionStat
 }

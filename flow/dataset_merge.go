@@ -13,7 +13,6 @@ func (d *Dataset) MergeSortedTo(name string, partitionCount int) (ret *Dataset) 
 	if len(d.Shards)%partitionCount > 0 {
 		everyN++
 	}
-
 	ret.IsLocalSorted = d.IsLocalSorted
 	ret.IsPartitionedBy = d.IsPartitionedBy
 	step := d.Flow.AddLinkedNToOneStep(d, everyN, ret)

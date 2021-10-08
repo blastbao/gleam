@@ -8,14 +8,16 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetCoGroupPartitionedSorted() != nil {
-			return NewCoGroupPartitionedSorted(
-				toInts(m.GetCoGroupPartitionedSorted().GetIndexes()),
-			)
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetCoGroupPartitionedSorted() != nil {
+				return NewCoGroupPartitionedSorted(
+					toInts(m.GetCoGroupPartitionedSorted().GetIndexes()),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 type CoGroupPartitionedSorted struct {
@@ -49,8 +51,10 @@ func (b *CoGroupPartitionedSorted) GetMemoryCostInMB(partitionSize int64) int64 
 }
 
 func DoCoGroupPartitionedSorted(leftRawChan, rightRawChan io.Reader, writer io.Writer, indexes []int, stats *pb.InstructionStat) error {
+
 	leftChan := newChannelOfValuesWithSameKey("left", leftRawChan, indexes)
 	rightChan := newChannelOfValuesWithSameKey("right", rightRawChan, indexes)
+
 
 	// get first value from both channels
 	leftValuesWithSameKey, leftHasValue := <-leftChan
@@ -61,49 +65,60 @@ func DoCoGroupPartitionedSorted(leftRawChan, rightRawChan io.Reader, writer io.W
 		ts := max(leftValuesWithSameKey.T, rightValuesWithSameKey.T)
 		switch {
 		case x == 0:
-			util.NewRow(ts).AppendKey(
-				leftValuesWithSameKey.K...).AppendValue(
-				leftValuesWithSameKey.V).AppendValue(
-				rightValuesWithSameKey.V).WriteTo(writer)
+			util.NewRow(ts).
+				AppendKey(leftValuesWithSameKey.K...).
+				AppendValue(leftValuesWithSameKey.V).
+				AppendValue(rightValuesWithSameKey.V).
+				WriteTo(writer)
 			stats.OutputCounter++
 			leftValuesWithSameKey, leftHasValue = <-leftChan
 			rightValuesWithSameKey, rightHasValue = <-rightChan
 			stats.InputCounter += 2
 		case x < 0:
-			util.NewRow(ts).AppendKey(
-				leftValuesWithSameKey.K...).AppendValue(
-				leftValuesWithSameKey.V).AppendValue(
-				[]interface{}{}).WriteTo(writer)
+			util.NewRow(ts).
+				AppendKey(leftValuesWithSameKey.K...).
+				AppendValue(leftValuesWithSameKey.V).
+				AppendValue([]interface{}{}).
+				WriteTo(writer)
 			stats.OutputCounter++
 			leftValuesWithSameKey, leftHasValue = <-leftChan
 			stats.InputCounter++
 		case x > 0:
-			util.NewRow(ts).AppendKey(
-				leftValuesWithSameKey.K...).AppendValue(
-				[]interface{}{}).AppendValue(
-				rightValuesWithSameKey.V).WriteTo(writer)
+			util.NewRow(ts).
+				AppendKey(leftValuesWithSameKey.K...).
+				AppendValue([]interface{}{}).
+				AppendValue(rightValuesWithSameKey.V).
+				WriteTo(writer)
 			stats.OutputCounter++
 			rightValuesWithSameKey, rightHasValue = <-rightChan
 			stats.InputCounter++
 		}
 	}
+
+
 	for leftHasValue {
-		util.NewRow(leftValuesWithSameKey.T).AppendKey(
-			leftValuesWithSameKey.K...).AppendValue(
-			leftValuesWithSameKey.V).AppendValue(
-			[]interface{}{}).WriteTo(writer)
+		util.NewRow(leftValuesWithSameKey.T).
+			AppendKey(leftValuesWithSameKey.K...).
+			AppendValue(leftValuesWithSameKey.V).
+			AppendValue([]interface{}{}).
+			WriteTo(writer)
 		stats.OutputCounter++
 		leftValuesWithSameKey, leftHasValue = <-leftChan
 		stats.InputCounter++
 	}
+
+
 	for rightHasValue {
-		util.NewRow(rightValuesWithSameKey.T).AppendKey(
-			rightValuesWithSameKey.K...).AppendValue(
-			[]interface{}{}).AppendValue(
-			rightValuesWithSameKey.V).WriteTo(writer)
+		util.NewRow(rightValuesWithSameKey.T).
+			AppendKey(rightValuesWithSameKey.K...).
+			AppendValue([]interface{}{}).
+			AppendValue(rightValuesWithSameKey.V).
+			WriteTo(writer)
 		stats.OutputCounter++
 		rightValuesWithSameKey, rightHasValue = <-rightChan
 		stats.InputCounter++
 	}
+
+
 	return nil
 }

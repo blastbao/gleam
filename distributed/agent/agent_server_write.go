@@ -8,17 +8,18 @@ import (
 )
 
 func (as *AgentServer) handleLocalWriteConnection(reader io.Reader, writerName, channelName string, readerCount int) {
-
+	// 创建 channelName 数据集
 	dsStore := as.storageBackend.CreateNamedDatasetShard(channelName)
 
 	log.Printf("on disk %s starts writing %s expected reader:%d", writerName, channelName, readerCount)
 
-	var count int64
 
+	/// 下面不断从 reader 中读取数据，并写入到 channelName 数据集上
+
+	var count int64
 	messageWriter := util.NewBufferedMessageWriter(dsStore, util.BUFFER_SIZE)
 
 	for {
-
 		message, err := util.ReadMessage(reader)
 		if err == io.EOF {
 			// println("agent recv eof:", string(message.Bytes()))

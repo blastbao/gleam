@@ -9,12 +9,14 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetMergeTo() != nil {
-			return NewMergeTo()
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetMergeTo() != nil {
+				return NewMergeTo()
+			}
+			return nil
+		},
+	)
 }
 
 type MergeTo struct{}
@@ -29,6 +31,7 @@ func (b *MergeTo) Name(prefix string) string {
 
 func (b *MergeTo) Function() func(readers []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error {
 	return func(readers []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error {
+		// 依次将 readers[0],readers[1]... 中的 rows 写入到 writers[0] 上
 		return DoMergeTo(readers, writers[0], stats)
 	}
 }

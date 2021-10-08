@@ -18,10 +18,12 @@ func (runner *gleamRunner) runMapperReducer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// 性能调试模式，输出 cpu/memory 采样信息到本地文件中
 	if runner.Option.IsProfiling {
-		cpuProfFile := fmt.Sprintf("mr_cpu_%d-s%d-t%d.pprof", runner.Option.HashCode,
-			runner.Option.StepId, runner.Option.TaskId)
+
+		cpuProfFile := fmt.Sprintf("mr_cpu_%d-s%d-t%d.pprof", runner.Option.HashCode, runner.Option.StepId, runner.Option.TaskId)
 		pwd, _ := os.Getwd()
+
 		// println("saving pprof to", pwd+"/"+cpuProfFile)
 
 		cf, err := os.Create(cpuProfFile)
@@ -43,9 +45,9 @@ func (runner *gleamRunner) runMapperReducer() {
 		defer func() {
 			runtime.GC()
 			pprof.Lookup("heap").WriteTo(mf, 0)
-
 		}()
 	}
+
 
 	stat.FlowHashCode = uint32(runner.Option.HashCode)
 	stat.Stats = []*pb.InstructionStat{
@@ -55,6 +57,7 @@ func (runner *gleamRunner) runMapperReducer() {
 		},
 	}
 
+	// 执行 Mapper
 	if runner.Option.Mapper != "" {
 		if fn, ok := mappers[MapperId(runner.Option.Mapper)]; ok {
 			if err := runner.processMapper(ctx, fn.Mapper); err != nil {
@@ -65,11 +68,16 @@ func (runner *gleamRunner) runMapperReducer() {
 		log.Fatalf("Missing mapper function %v. Args: %v", runner.Option.Mapper, os.Args)
 	}
 
+	// 执行 Reducer
 	if runner.Option.Reducer != "" {
+
+		// 必须提供 "," 分隔的整数数组
 		if runner.Option.KeyFields == "" {
 			log.Fatalf("Also expecting values for -gleam.keyFields! Actual arguments: %v", os.Args)
 		}
+
 		if fn, ok := reducers[ReducerId(runner.Option.Reducer)]; ok {
+			// 按 "," 分隔，得到整数数组，它存储了 key 字段的索引下标。
 			keyPositions := strings.Split(runner.Option.KeyFields, ",")
 			var keyIndexes []int
 			for _, keyPosition := range keyPositions {
@@ -79,7 +87,7 @@ func (runner *gleamRunner) runMapperReducer() {
 				}
 				keyIndexes = append(keyIndexes, keyIndex)
 			}
-
+			// 执行 reducer
 			if err := runner.processReducer(ctx, fn.Reducer, keyIndexes); err != nil {
 				log.Fatalf("Failed to execute reducer %v: %v", os.Args, err)
 			}

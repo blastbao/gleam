@@ -8,15 +8,17 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetLocalLimit() != nil {
-			return NewLocalLimit(
-				int(m.GetLocalLimit().GetN()),
-				int(m.GetLocalLimit().GetOffset()),
-			)
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetLocalLimit() != nil {
+				return NewLocalLimit(
+					int(m.GetLocalLimit().GetN()),
+					int(m.GetLocalLimit().GetOffset()),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 type LocalLimit struct {
@@ -34,6 +36,7 @@ func (b *LocalLimit) Name(prefix string) string {
 
 func (b *LocalLimit) Function() func(readers []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error {
 	return func(readers []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error {
+		// 从 readers[0] 中读取 rows ，并从 offset 开始发送 limit 个 row 到 writers[0] 上。
 		return DoLocalLimit(readers[0], writers[0], b.n, b.offset, stats)
 	}
 }

@@ -17,25 +17,31 @@ func NewRow(timestamp int64, objects ...interface{}) *Row {
 	return r
 }
 
-func (row *Row) AppendKey(objects ...interface{}) *Row {
-	row.K = append(row.K, objects...)
+func (row *Row) AppendKey(keys ...interface{}) *Row {
+	row.K = append(row.K, keys...)
 	return row
 }
 
-func (row *Row) AppendValue(objects ...interface{}) *Row {
-	row.V = append(row.V, objects...)
+func (row *Row) AppendValue(values ...interface{}) *Row {
+	row.V = append(row.V, values...)
 	return row
 }
 
-// UseKeys use the indexes[] specified fields as key fields
-// and the rest of fields as value fields
+// UseKeys use the indexes[] specified fields as key fields and the rest of fields as value fields
+//
+// UseKeys 将 indexes[] 指定的字段用作 key ，其余字段用作 value 。
 func (row *Row) UseKeys(indexes []int) (err error) {
+
 	if indexes == nil {
 		return nil
 	}
+
 	var keys, values []interface{}
 	kLen, vLen := len(row.K), len(row.V)
+
 	used := make([]bool, kLen+vLen)
+
+	//
 	for _, x := range indexes {
 		if x <= kLen {
 			keys = append(keys, row.K[x-1])
@@ -44,16 +50,19 @@ func (row *Row) UseKeys(indexes []int) (err error) {
 		}
 		used[x-1] = true
 	}
-	for i, k := range row.K {
+
+	for i, key := range row.K {
 		if !used[i] {
-			values = append(values, k)
+			values = append(values, key)
 		}
 	}
-	for i, v := range row.V {
+
+	for i, value := range row.V {
 		if !used[i+kLen] {
-			values = append(values, v)
+			values = append(values, value)
 		}
 	}
+
 	row.K, row.V = keys, values
 	return err
 }

@@ -14,9 +14,11 @@ func WriteEOFMessage(writer io.Writer) (err error) {
 }
 
 func WriteMessage(writer io.Writer, m []byte) (err error) {
+	// 写入 length
 	if err = binary.Write(writer, binary.LittleEndian, int32(len(m))); err != nil {
 		return fmt.Errorf("Failed to write message length: %v", err)
 	}
+	// 写入 body
 	if _, err = writer.Write(m); err != nil {
 		return fmt.Errorf("Failed to write message content: %v", err)
 	}

@@ -11,15 +11,19 @@ import (
 
 func (runner *gleamRunner) processReducer(ctx context.Context, f Reducer, keyPositions []int) (err error) {
 	return runner.report(ctx, func() error {
+		//
 		if len(keyPositions) == 1 && keyPositions[0] == 0 {
 			return runner.doProcessReducer(f)
 		}
+		//
 		return runner.doProcessReducerByKeys(f, keyPositions)
 	})
 }
 
 func (runner *gleamRunner) doProcessReducer(f Reducer) (err error) {
 	// get the first row
+
+	// 从标准输入读取第一行
 	row, err := util.ReadRow(os.Stdin)
 	if err != nil {
 		if err == io.EOF {
@@ -29,10 +33,13 @@ func (runner *gleamRunner) doProcessReducer(f Reducer) (err error) {
 	}
 	stat.Stats[0].InputCounter++
 
+	//
 	lastTs := row.T
 	lastKeys := row.K
 
 	for {
+
+		// 从标准输入读取一行数据
 		row, err = util.ReadRow(os.Stdin)
 		if err != nil {
 			if err != io.EOF {
@@ -42,11 +49,15 @@ func (runner *gleamRunner) doProcessReducer(f Reducer) (err error) {
 		}
 		stat.Stats[0].InputCounter++
 
+		// 提取 Keys
 		keys := row.K
+
+		//
 		lastKeys, err = reduce(f, lastKeys, keys)
 		if row.T > lastTs {
 			lastTs = row.T
 		}
+
 	}
 
 	// fmt.Fprintf(os.Stderr, "lastKeys:%v\n", lastKeys)
@@ -101,6 +112,7 @@ func (runner *gleamRunner) doProcessReducerByKeys(f Reducer, keyPositions []int)
 }
 
 func reduce(f Reducer, x, y []interface{}) ([]interface{}, error) {
+
 	if len(x) == 1 && len(y) == 1 {
 		z, err := f(x[0], y[0])
 		if err != nil {
@@ -108,9 +120,12 @@ func reduce(f Reducer, x, y []interface{}) ([]interface{}, error) {
 		}
 		return []interface{}{z}, nil
 	}
+
+	//
 	z, err := f(x, y)
 	if err != nil {
 		return nil, err
 	}
+
 	return z.([]interface{}), nil
 }

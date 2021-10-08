@@ -16,12 +16,13 @@ type pair struct {
 // example usage: Distinct(Field(1,2)) means
 // distinct on field 1 and 2.
 // TODO: optimize for low cardinality case.
+//
 func (d *Dataset) Distinct(name string, sortOption *SortOption) *Dataset {
-	ret := d.LocalSort(name, sortOption).LocalDistinct(name, sortOption)
+	ds := d.LocalSort(name, sortOption).LocalDistinct(name, sortOption)
 	if len(d.Shards) > 1 {
-		ret = ret.MergeSortedTo(name, 1).LocalDistinct(name, sortOption)
+		ds = ds.MergeSortedTo(name, 1).LocalDistinct(name, sortOption)
 	}
-	return ret
+	return ds
 }
 
 // Sort sort on specific fields, default to the first field.
@@ -57,24 +58,35 @@ func (d *Dataset) LocalDistinct(name string, sortOption *SortOption) *Dataset {
 }
 
 func (d *Dataset) LocalSort(name string, sortOption *SortOption) *Dataset {
+	// 如果本地排序规则和 sortOption 相同，就不用再排序了
 	if isOrderByEquals(d.IsLocalSorted, sortOption.orderByList) {
 		return d
 	}
 
-	ret, step := add1ShardTo1Step(d)
-	ret.IsLocalSorted = sortOption.orderByList
-	ret.IsPartitionedBy = d.IsPartitionedBy
+	//
+	dataSet, step := add1ShardTo1Step(d)
+	dataSet.IsLocalSorted = sortOption.orderByList
+	dataSet.IsPartitionedBy = d.IsPartitionedBy
+
 	step.SetInstruction(name, instruction.NewLocalSort(sortOption.orderByList, int(d.GetPartitionSize())*3))
 	step.Description = sortOption.String()
-	return ret
+
+	return dataSet
 }
 
+// LocalTop
 func (d *Dataset) LocalTop(name string, n int, sortOption *SortOption) *Dataset {
+
+	//
 	ret, step := add1ShardTo1Step(d)
 	ret.IsLocalSorted = getReverseOrderBy(sortOption.orderByList)
 	ret.IsPartitionedBy = d.IsPartitionedBy
+
+
+	// 创建 LocalTop 指令，并保存到 step 上。
 	step.SetInstruction(name, instruction.NewLocalTop(n, ret.IsLocalSorted))
 	step.Description = fmt.Sprintf("local top %v", n)
+
 
 	return ret
 }

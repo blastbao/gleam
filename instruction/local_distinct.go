@@ -9,14 +9,16 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetLocalDistinct() != nil {
-			return NewLocalDistinct(
-				toOrderBys(m.GetLocalDistinct().GetOrderBys()),
-			)
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetLocalDistinct() != nil {
+				return NewLocalDistinct(
+					toOrderBys(m.GetLocalDistinct().GetOrderBys()),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 type LocalDistinct struct {

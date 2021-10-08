@@ -10,16 +10,17 @@ import (
 	"github.com/chrislusf/gleam/pb"
 )
 
+// TaskGroup 任务组
 type TaskGroup struct {
-	Id              int
-	Tasks           []*flow.Task
-	Parents         []*TaskGroup
-	ParentStepGroup *StepGroup
-	RequestId       uint32 // id for actual request when running
-	WaitAt          time.Time
-	StartAt         time.Time
-	StopAt          time.Time
-	Error           error
+	Id              int				// 组 ID
+	Tasks           []*flow.Task	// 任务列表
+	Parents         []*TaskGroup	// 父任务
+	ParentStepGroup *StepGroup		//
+	RequestId       uint32 			// id for actual request when running
+	WaitAt          time.Time		//
+	StartAt         time.Time		//
+	StopAt          time.Time		//
+	Error           error			//
 }
 
 type StepGroup struct {

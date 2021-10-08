@@ -23,6 +23,8 @@ type OrderBy struct {
 	Order Order // Ascending or Descending
 }
 
+
+// Instruction 指令
 type Instruction interface {
 	Name(string) string
 	Function() func(readers []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error

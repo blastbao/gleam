@@ -19,9 +19,9 @@ func (m *InstructionSet) InstructionNames() (stepNames []string) {
 	return
 }
 
-func (i *Instruction) SetInputLocations(locations []DataLocation) {
+func (m *Instruction) SetInputLocations(locations []DataLocation) {
 	for _, loc := range locations {
-		i.InputShardLocations = append(i.InputShardLocations, &DatasetShardLocation{
+		m.InputShardLocations = append(m.InputShardLocations, &DatasetShardLocation{
 			Name:   loc.Name,
 			Host:   loc.Location.Server,
 			Port:   int32(loc.Location.Port),
@@ -30,9 +30,9 @@ func (i *Instruction) SetInputLocations(locations []DataLocation) {
 	}
 }
 
-func (i *Instruction) SetOutputLocations(locations []DataLocation) {
+func (m *Instruction) SetOutputLocations(locations []DataLocation) {
 	for _, loc := range locations {
-		i.OutputShardLocations = append(i.OutputShardLocations, &DatasetShardLocation{
+		m.OutputShardLocations = append(m.OutputShardLocations, &DatasetShardLocation{
 			Name:   loc.Name,
 			Host:   loc.Location.Server,
 			Port:   int32(loc.Location.Port),
@@ -41,6 +41,6 @@ func (i *Instruction) SetOutputLocations(locations []DataLocation) {
 	}
 }
 
-func (i *Instruction) GetName() string {
-	return fmt.Sprintf("%d:%d", i.StepId, i.TaskId)
+func (m *Instruction) GetName() string {
+	return fmt.Sprintf("%d:%d", m.StepId, m.TaskId)
 }

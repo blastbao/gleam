@@ -10,15 +10,17 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetSelect() != nil {
-			return NewSelect(
-				toInts(m.GetSelect().GetKeyIndexes()),
-				toInts(m.GetSelect().GetValueIndexes()),
-			)
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetSelect() != nil {
+				return NewSelect(
+					toInts(m.GetSelect().GetKeyIndexes()),
+					toInts(m.GetSelect().GetValueIndexes()),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 type Select struct {
@@ -27,7 +29,10 @@ type Select struct {
 }
 
 func NewSelect(keyIndexes, valueIndexes []int) *Select {
-	return &Select{keyIndexes, valueIndexes}
+	return &Select{
+		keyIndexes,
+		valueIndexes,
+	}
 }
 
 func (b *Select) Name(prefix string) string {
@@ -36,7 +41,10 @@ func (b *Select) Name(prefix string) string {
 
 func (b *Select) Function() func(readers []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error {
 	return func(readers []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error {
+
+
 		return DoSelect(readers[0], writers[0], b.keyIndexes, b.valueIndexes, stats)
+
 	}
 }
 
@@ -59,8 +67,11 @@ func DoSelect(reader io.Reader, writer io.Writer, keyIndexes, valueIndexes []int
 	return util.ProcessRow(reader, nil, func(row *util.Row) error {
 		stats.InputCounter++
 
+
 		var keys, values []interface{}
+
 		kLen := len(row.K)
+
 		for _, x := range keyIndexes {
 			if x <= kLen {
 				keys = append(keys, row.K[x-1])
@@ -68,6 +79,8 @@ func DoSelect(reader io.Reader, writer io.Writer, keyIndexes, valueIndexes []int
 				keys = append(keys, row.V[x-1-kLen])
 			}
 		}
+
+
 		for _, x := range valueIndexes {
 			if x <= kLen {
 				values = append(values, row.K[x-1])
@@ -75,6 +88,8 @@ func DoSelect(reader io.Reader, writer io.Writer, keyIndexes, valueIndexes []int
 				values = append(values, row.V[x-1-kLen])
 			}
 		}
+
+
 		row.K, row.V = keys, values
 
 		row.WriteTo(writer)

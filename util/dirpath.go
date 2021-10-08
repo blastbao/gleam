@@ -7,6 +7,7 @@ import (
 )
 
 func UserHomeDir() string {
+	// 检查操作系统
 	if runtime.GOOS == "windows" {
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
 		if home == "" {

@@ -11,12 +11,14 @@ import (
 )
 
 func init() {
-	InstructionRunner.Register(func(m *pb.Instruction) Instruction {
-		if m.GetRoundRobin() != nil {
-			return NewRoundRobin()
-		}
-		return nil
-	})
+	InstructionRunner.Register(
+		func(m *pb.Instruction) Instruction {
+			if m.GetRoundRobin() != nil {
+				return NewRoundRobin()
+			}
+			return nil
+		},
+	)
 }
 
 type RoundRobin struct {
@@ -46,15 +48,17 @@ func (b *RoundRobin) GetMemoryCostInMB(partitionSize int64) int64 {
 	return 1
 }
 
-func DoRoundRobin(reader []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error {
+func DoRoundRobin(readers []io.Reader, writers []io.Writer, stats *pb.InstructionStat) error {
 	shardCount := int32(len(writers))
 
 	var wg sync.WaitGroup
 	count := int32(0)
-	for _, r := range reader {
+
+	// 为每个 reader 启动一个 goroutine ，它从 reader 中读取数据，并按 RoundRobin 算法选择一个 writer 并写入其中。
+	for _, reader := range readers {
 		wg.Add(1)
-		go func(r io.Reader) {
-			err := util.ProcessMessage(r, func(data []byte) error {
+		go func(reader io.Reader) {
+			err := util.ProcessMessage(reader, func(data []byte) error {
 				atomic.AddInt64(&stats.InputCounter, 1)
 				atomic.AddInt32(&count, 1)
 				err := util.WriteMessage(writers[count%shardCount], data)
@@ -67,7 +71,7 @@ func DoRoundRobin(reader []io.Reader, writers []io.Writer, stats *pb.Instruction
 				log.Println(err)
 			}
 			wg.Done()
-		}(r)
+		}(reader)
 	}
 	wg.Wait()
 	return nil

@@ -20,7 +20,7 @@ func (o *DistributedPlanner) GetFlowRunner() flow.FlowRunner {
 }
 
 // driver runs on local, controlling all tasks
-func (fcd *DistributedPlanner) RunFlowContext(ctx context.Context, fc *flow.Flow) {
+func (fcd *DistributedPlanner) RunFlow(ctx context.Context, fc *flow.Flow) {
 
 	stepGroups, taskGroups := plan.GroupTasks(fc)
 
