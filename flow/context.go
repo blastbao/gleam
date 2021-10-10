@@ -82,16 +82,19 @@ func (flow *Flow) AddOneToOneStep(input *Dataset, output *Dataset) (step *Step) 
 
 	// setup the network
 	//
-	//
+	// 创建 N 个 task ，每个 task 负责一个 input shard 到 output shard 的逻辑处理。
 	for i, shard := range input.GetShards() {
 		// 为 step 创建一个 task
 		task := step.NewTask()
-		//
+
+		// 为 task 添加 output shard
 		if output != nil && output.Shards != nil {
 			fromTaskToDatasetShard(task, output.GetShards()[i])
 		}
-		//
+		// 为 task 添加 input shard
 		fromDatasetShardToTask(shard, task)
+
+		// task 的 output shard 和 input shard 是一一对应的，也即所谓的 OneToOne 。
 	}
 
 	// 返回
@@ -112,16 +115,15 @@ func (flow *Flow) AddAllToOneStep(input *Dataset, output *Dataset) (step *Step) 
 
 	// setup the network
 
-	// 为 step 创建一个 task
+	// 为 step 创建一个 task ，它复杂将 n 个 input shard 处理后发送到 1 个 output shard 上。
 	task := step.NewTask()
 
-
-	// 有一个输出分片
+	// 为 task 添加 1 个 output shard 。
 	if output != nil {
 		fromTaskToDatasetShard(task, output.GetShards()[0])
 	}
 
-	// 有 n 个输入分片
+	// 为 task 添加 n 个 input shard 。
 	for _, shard := range input.GetShards() {
 		fromDatasetShardToTask(shard, task)
 	}
@@ -139,16 +141,16 @@ func (flow *Flow) AddOneToAllStep(input *Dataset, output *Dataset) (step *Step) 
 
 	// setup the network
 
-	// 为 step 创建一个 task
+	// 为 step 创建一个 task，它复杂将 1 个 input shard 处理后发送到 n 个 output shard 上。
 	task := step.NewTask()
 
 
-	// 有一个输入分片
+	// 添加 1 个 input shard
 	if input != nil {
 		fromDatasetShardToTask(input.GetShards()[0], task)
 	}
 
-	// 有 n 个输出分片
+	// 添加 n 个 output shard
 	for _, shard := range output.GetShards() {
 		fromTaskToDatasetShard(task, shard)
 	}
@@ -166,10 +168,10 @@ func (flow *Flow) AddAllToAllStep(input *Dataset, output *Dataset) (step *Step) 
 
 	// setup the network
 
-	// 为 step 创建一个 task
+	// 为 step 创建一个 task，它复杂将 m 个 input shard 处理后发送到 n 个 output shard 上。
 	task := step.NewTask()
 
-	// task 有 n 个输入分片
+	// task 有 m 个输入分片
 	for _, shard := range input.GetShards() {
 		fromDatasetShardToTask(shard, task)
 	}
